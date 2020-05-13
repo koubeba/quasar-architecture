@@ -1,4 +1,6 @@
 frontend/sender/node_modules/*
 frontend/sender/public/javascripts/*
+frontend/sender/package-lock.json
 frontend/vis/node_modules/*
 frontend/vis/public/javascripts/*
+frontend/vis/package-lock.json

@@ -1,0 +1,4 @@
+{
+    "clientID": "data-sender",
+    "brokers": ["localhost:9092"]
+}

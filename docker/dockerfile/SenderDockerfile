@@ -1,0 +1,5 @@
+FROM node:14.2.0
+
+# install express, bootstrap, kafka.js
+RUN npm install -g express-generator
+RUN npm install -g browserify

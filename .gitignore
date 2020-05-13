@@ -1,0 +1,4 @@
+frontend/sender/node_modules/*
+frontend/sender/public/javascripts/*
+frontend/vis/node_modules/*
+frontend/vis/public/javascripts/*

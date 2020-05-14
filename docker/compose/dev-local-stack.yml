@@ -23,10 +23,11 @@ services:
     networks:
       - messages-network
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: localhost
-      KAFKA_CREATE_TOPICS: "test:1:1"
-      KAFKA_LISTENERS: PLAINTEXT://:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      CREATE_TOPICS: "messages:1:1"
+      KAFKA_LISTENERS: LISTENER_BOB://kafka1:29092,LISTENER_FRED://kafka1:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_BOB://kafka1:29092,LISTENER_FRED://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_BOB:PLAINTEXT,LISTENER_FRED:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_BOB
       KAFKA_ZOOKEEPER_CONNECT: zoo1:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -41,7 +42,7 @@ services:
     networks:
       - messages-network
     environment:
-      KAFKA_BROKERCONNECT: kafka1:9092, kafka2:9093, kafka3:9094
+      KAFKA_BROKERCONNECT: kafka1:29092
       JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication"
     depends_on:
       - kafka1

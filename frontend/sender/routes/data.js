@@ -1,4 +1,5 @@
 var express = require('express');
+var process = require('process')
 const { Kafka } = require('kafkajs');
 const kafkaConfig = require('../config/kafkaConfig.json');
 var router = express.Router();
@@ -13,8 +14,6 @@ const producer = kafka.producer();
 
 /* POST data from CSV. */
 router.post('/', async function(req, res, next) {
-    console.log(JSON.stringify(req.body));
-    console.log(cleanKeys(JSON.stringify(req.body)));
   sendMessage(cleanKeys(JSON.stringify(req.body)));
   res.send('POST data successful');
 });

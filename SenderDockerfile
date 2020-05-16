@@ -1,0 +1,17 @@
+FROM node:10.10.0
+ARG sourceDir
+
+WORKDIR /usr/src/app
+
+COPY $sourceDir/bin    ./bin
+COPY $sourceDir/config ./config
+COPY $sourceDir/public ./public
+COPY $sourceDir/routes ./routes
+COPY $sourceDir/views  ./views
+COPY $sourceDir/*      ./
+
+RUN npm install
+
+EXPOSE 3000
+
+CMD ["npm", "start"]

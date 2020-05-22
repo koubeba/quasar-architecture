@@ -21,7 +21,7 @@ router.post('/', async function(req, res, next) {
 async function sendMessage(message) {
     await producer.connect();
     await producer.send({
-    topic: 'Messages',
+    topic: 'Spectra',
     messages: [{
             key: 'RowData',
             value: message

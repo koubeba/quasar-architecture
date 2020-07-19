@@ -42,9 +42,11 @@ function processCSV() {
                 sendDataToServer(row.data, counter, percentCompleted);
             }
         });
+        return true;
     }
     else {
         toastr.warning("No file uploaded");
+        return false;
     }
 }
 
@@ -103,13 +105,20 @@ function setUploadButtonToActive(activated) {
 }
 
 $('document').ready(function () {
+
     $("#uploadFile").on("click", function(e) {
         setProgressBar(0);
-        processCSV();
+        var processed = processCSV();
         $(document).ajaxStop(function() {
-            toastr.success("File upload completed");
-            setProgressBar(100);
+            if (processed == true) {
+                toastr.success("File upload completed");
+                setProgressBar(100);
+            }
         });
+    });
+
+    $('#uploadedFile').on("change", function() {
+        setProgressBar(0);
     });
 });
 

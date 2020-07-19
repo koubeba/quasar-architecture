@@ -1,16 +1,21 @@
-var createError = require('http-errors');
-var express = require('express');
-var bodyParser = require('body-parser');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const createError         = require('http-errors');
+const express             = require('express');
+const bodyParser          = require('body-parser')
+const path                = require('path');
+const cookieParser        = require('cookie-parser');
+const logger              = require('morgan');
 
-var indexRouter = require('./routes/index');
-var dataRouter = require('./routes/data');
+// Kafka connection
+const {Kafka, logLevel}   = require('kafkajs');
+const kafkaConfig         = require('./config/kafkaConfig.json');
+
+// Routers
+const indexRouter         = require('./routes/index');
+const dataRouter          = require('./routes/data');
 
 var app = express();
 
-// view engine setup
+// View engine setup
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 
@@ -20,6 +25,38 @@ app.use(bodyParser({limit: '50mb'}));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Kafka configuration
+const kafka = new Kafka({
+    logLevel: logLevel.NOTHING,
+    clientId: kafkaConfig.clientID,
+    brokers:  kafkaConfig.brokers
+});
+app.set('kafka', producer);
+const producer = kafka.producer();
+
+// Kafka connection status
+var KAFKA_CONNECTED = false;
+
+// Kafka events
+const {CONNECT, DISCONNECT} = producer.events;
+
+producer.on(CONNECT, function() {
+    KAFKA_CONNECTED = true;
+})
+producer.on(DISCONNECT, function() {
+    KAFKA_CONNECTED = false;
+})
+
+// Middleware for passing Kafka connection status
+app.use('/data/heartbeat', async function(req, res, next) {
+  if (KAFKA_CONNECTED == false) {
+    console.log("Trying to connect to the Kafka broker...");
+    await producer.connect().catch(e => {KAFKA_CONNECTED = false});
+  }
+  res.locals.KAFKA_CONNECTED = KAFKA_CONNECTED;
+  next();
+});
 
 app.use('/', indexRouter);
 app.use('/data', dataRouter);
@@ -39,5 +76,9 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+app.on('close', function() {
+    producer.disconnect();
+})
 
 module.exports = app;

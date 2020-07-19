@@ -1,33 +1,41 @@
 var express = require('express');
-var process = require('process')
-const { Kafka } = require('kafkajs');
-const kafkaConfig = require('../config/kafkaConfig.json');
+
 var router = express.Router();
 
 let re = /dataRow\[([^\[\]]*)\]/ig;
 
-const kafka = new Kafka({
-    clientId: kafkaConfig.clientID,
-    brokers: kafkaConfig.brokers
-});
-const producer = kafka.producer();
-
 /* POST data from CSV. */
 router.post('/', async function(req, res, next) {
-  sendMessage(cleanKeys(JSON.stringify(req.body)));
-  res.send('POST data successful');
+  sendMessage(req.app.get('kafka'), cleanKeys(JSON.stringify(req.body)));
+  res.send('POST succeeded');
 });
 
-async function sendMessage(message) {
-    await producer.connect();
-    await producer.send({
+router.get('/reconnect', async function(req, res, next) {
+    if (res.locals.KAFKA_CONNECTED == true) {
+        res.status(200);
+    } else {
+        res.status(503);
+    }
+    res.send();
+});
+
+router.get('/heartbeat', async function(req, res, next) {
+    if (res.locals.KAFKA_CONNECTED == true) {
+        res.status(200);
+    } else {
+        res.status(503);
+    }
+    res.send();
+});
+
+async function sendMessage(kafka, message) {
+    await kafka.send({
     topic: 'Spectra',
     messages: [{
             key: 'RowData',
             value: message
         }],
     });
-    await producer.disconnect();
 }
 
 function cleanKeys(dataRow) {

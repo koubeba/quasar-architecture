@@ -1,4 +1,15 @@
 import { parse } from 'papaparse';
+var toastr  = require('toastr');
+
+const INTERVAL_NOT_CONNECTED = 1000;
+var KAFKA_CONNECTED = undefined;
+
+const heartbeatInterval = window.setInterval(heartbeat, INTERVAL_NOT_CONNECTED);
+
+toastr.options.preventDuplicates = true;
+toastr.options.closeButton       = true;
+toastr.options.timeOut           = 0;
+toastr.options.extendedTimeOut   = 0;
 
 function processCSV() {
     let fileUploadForm = $("#uploadedFile")[0];
@@ -35,6 +46,7 @@ function processCSV() {
 }
 
 function setProgressBar(percent) {
+    toastr.success('Hooray');
     $('.progress-bar').css("width", percent + "%");
 }
 
@@ -48,6 +60,23 @@ function sendDataToServer(dataRow, percent) {
         }
     }).complete(function () {
         setProgressBar(percent);
+    });
+}
+
+function heartbeat() {
+    $.ajax({
+        url: '/data/heartbeat',
+        type: 'GET',
+        complete: function(response) {
+            if (response.status == 200 && KAFKA_CONNECTED != true) {
+                toastr.success('Connected to Kafka broker!');
+                KAFKA_CONNECTED = true;
+                window.clearInterval(heartbeatInterval);
+            } else if (response.status == 503 && KAFKA_CONNECTED != false) {
+                toastr.error('Disconnected from Kafka broker!');
+                KAFKA_CONNECTED = false;
+            }
+        }
     });
 }
 
@@ -66,5 +95,6 @@ $('document').ready(function () {
         $(document).ajaxStop(function() {
             setProgressBar(100);
         });
-    })
+    });
 });
+

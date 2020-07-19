@@ -30,7 +30,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 const kafka = new Kafka({
     logLevel: logLevel.NOTHING,
     clientId: kafkaConfig.clientID,
-    brokers:  kafkaConfig.brokers
+    brokers:  kafkaConfig.brokers,
+    retry:    {
+        initialRetryTime: 1000,
+        retires:          1
+    }
 });
 app.set('kafka', producer);
 const producer = kafka.producer();

@@ -1,7 +1,7 @@
 import { parse } from 'papaparse';
 var toastr  = require('toastr');
 
-const INTERVAL_NOT_CONNECTED = 1000;
+const INTERVAL_NOT_CONNECTED = 3000;
 var KAFKA_CONNECTED = undefined;
 
 const heartbeatInterval = window.setInterval(heartbeat, INTERVAL_NOT_CONNECTED);
@@ -12,8 +12,10 @@ toastr.options.timeOut           = 0;
 toastr.options.extendedTimeOut   = 0;
 
 function processCSV() {
+
     let fileUploadForm = $("#uploadedFile")[0];
-    if (fileUploadForm.value !== 'undefined') {
+
+    if (fileUploadForm.value !== "") {
         let file = fileUploadForm.files[0]
         var allRowsSize = file.size;
 
@@ -37,20 +39,24 @@ function processCSV() {
                 averageRowByteSize = sumRowByteSize/counter;
                 percentCompleted = counter*(averageRowByteSize/allRowsSize)*100;
 
-                sendDataToServer(row.data, percentCompleted);
+                sendDataToServer(row.data, counter, percentCompleted);
             }
-        })
+        });
     }
-    else 
-        console.log("No file uploaded")
+    else {
+        toastr.warning("No file uploaded");
+    }
 }
 
 function setProgressBar(percent) {
-    toastr.success('Hooray');
     $('.progress-bar').css("width", percent + "%");
 }
 
-function sendDataToServer(dataRow, percent) {
+function setRowsSentInfo(rowsSent) {
+    $('.info-text-row').text(`Sent ${rowsSent} rows`);
+}
+
+function sendDataToServer(dataRow, rowsSent, percent) {
     $.ajax({
         url: '/data/',
         type: 'POST',
@@ -59,6 +65,7 @@ function sendDataToServer(dataRow, percent) {
             console.log('Sent data!');
         }
     }).complete(function () {
+        setRowsSentInfo(rowsSent);
         setProgressBar(percent);
     });
 }
@@ -72,9 +79,11 @@ function heartbeat() {
                 toastr.success('Connected to Kafka broker!');
                 KAFKA_CONNECTED = true;
                 window.clearInterval(heartbeatInterval);
+                setUploadButtonToActive(true);
             } else if (response.status == 503 && KAFKA_CONNECTED != false) {
                 toastr.error('Disconnected from Kafka broker!');
                 KAFKA_CONNECTED = false;
+                setUploadButtonToActive(false);
             }
         }
     });
@@ -88,11 +97,17 @@ function rowDataSize(data) {
     return Buffer.byteLength(Object.values(data).toString());
 }
 
+function setUploadButtonToActive(activated) {
+    console.log("Setting upload button to disabled");
+    $("#uploadFile").find("button").prop('disabled', !activated);
+}
+
 $('document').ready(function () {
     $("#uploadFile").on("click", function(e) {
         setProgressBar(0);
         processCSV();
         $(document).ajaxStop(function() {
+            toastr.success("File upload completed");
             setProgressBar(100);
         });
     });

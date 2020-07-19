@@ -10,15 +10,6 @@ router.post('/', async function(req, res, next) {
   res.send('POST succeeded');
 });
 
-router.get('/reconnect', async function(req, res, next) {
-    if (res.locals.KAFKA_CONNECTED == true) {
-        res.status(200);
-    } else {
-        res.status(503);
-    }
-    res.send();
-});
-
 router.get('/heartbeat', async function(req, res, next) {
     if (res.locals.KAFKA_CONNECTED == true) {
         res.status(200);

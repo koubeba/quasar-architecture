@@ -1,8 +1,11 @@
 import { parse } from 'papaparse';
+import Cookies   from 'js-cookie';
 var toastr  = require('toastr');
 
 const INTERVAL_NOT_CONNECTED = 3000;
 var KAFKA_CONNECTED = undefined;
+
+var CACHED_FILES = {};
 
 const heartbeatInterval = window.setInterval(heartbeat, INTERVAL_NOT_CONNECTED);
 
@@ -17,6 +20,7 @@ function processCSV() {
 
     if (fileUploadForm.value !== "") {
         let file = fileUploadForm.files[0]
+        let filename = file.name;
         var allRowsSize = file.size;
 
         var counter = 0;
@@ -42,16 +46,20 @@ function processCSV() {
                 sendDataToServer(row.data, counter, percentCompleted);
             }
         });
-        return true;
+        return {'filename': filename, 'rows': counter};
     }
     else {
         toastr.warning("No file uploaded");
-        return false;
+        return undefined;
     }
 }
 
 function setProgressBar(percent) {
     $('.progress-bar').css("width", percent + "%");
+}
+
+function clearRowsSentInfo() {
+    $('.info-text-row').text("");
 }
 
 function setRowsSentInfo(rowsSent) {
@@ -64,11 +72,10 @@ function sendDataToServer(dataRow, rowsSent, percent) {
         type: 'POST',
         data: {'dataRow': dataRow},
         success: function(data) {
-            console.log('Sent data!');
+            setRowsSentInfo(rowsSent);
+            setProgressBar(percent);
         }
     }).complete(function () {
-        setRowsSentInfo(rowsSent);
-        setProgressBar(percent);
     });
 }
 
@@ -100,8 +107,14 @@ function rowDataSize(data) {
 }
 
 function setUploadButtonToActive(activated) {
-    console.log("Setting upload button to disabled");
     $("#uploadFile").find("button").prop('disabled', !activated);
+}
+
+function cacheSentFile(filename, rows) {
+    Cookies.set(filename, JSON.stringify({
+        'rowCount': rows,
+        'timestamp': new Date()
+    }), { sameSite: 'lax' });
 }
 
 $('document').ready(function () {
@@ -110,14 +123,16 @@ $('document').ready(function () {
         setProgressBar(0);
         var processed = processCSV();
         $(document).ajaxStop(function() {
-            if (processed == true) {
+            if (processed != undefined) {
                 toastr.success("File upload completed");
+                cacheSentFile(processed['filename'], processed['rows']);
                 setProgressBar(100);
             }
         });
     });
 
     $('#uploadedFile').on("change", function() {
+        clearRowsSentInfo();
         setProgressBar(0);
     });
 });

@@ -14,9 +14,11 @@ const indexRouter         = require('./routes/index');
 const dataRouter          = require('./routes/data');
 
 var app = express();
+app.set('view cache', true);
 
 // View engine setup
-app.set('views', __dirname + '/views');
+const views = path.join(__dirname, 'views');
+app.set('views', views);
 app.set('view engine', 'pug');
 
 app.use(logger('dev'));
@@ -36,8 +38,8 @@ const kafka = new Kafka({
         retires:          1
     }
 });
-app.set('kafka', producer);
 const producer = kafka.producer();
+app.set('kafka', producer);
 
 // Kafka connection status
 var KAFKA_CONNECTED = false;
@@ -71,7 +73,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use('/data', function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -80,6 +82,8 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+console.log(`View cache ${ app.get('view cache') }`)
 
 app.on('close', function() {
     producer.disconnect();

@@ -4,9 +4,10 @@
  * Module dependencies.
  */
 
-var app = require('../app');
-var debug = require('debug')('sender:server');
-var http = require('http');
+var app                 = require('../app');
+var debug               = require('debug')('sender:server');
+var http                = require('http');
+const CachePugTemplates  = require('cache-pug-templates');
 
 /**
  * Get port from environment and store in Express.
@@ -80,8 +81,11 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
+const views = '/home/maja/Workspace/quasar-analysis/frontend/sender/views';
 
 function onListening() {
+    const cache = new CachePugTemplates({ app, views });
+    cache.start();
   var addr = server.address();
   var bind = typeof addr === 'string'
     ? 'pipe ' + addr

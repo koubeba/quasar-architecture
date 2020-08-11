@@ -5,4 +5,7 @@ frontend/vis/node_modules/*
 frontend/vis/public/javascripts/*
 frontend/vis/package-lock.json
 
-credentials/*
+/architecture/terraform.tfstate
+/architecture/terraform.tfstate.backup
+/architecture/.terraform/
+/architecture/credentials/

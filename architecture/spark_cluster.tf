@@ -28,5 +28,10 @@ resource "google_dataproc_cluster" "spark_cluster" {
         boot_disk_size_gb = var.worker_disk_size_gb
       }
     }
+
+    software_config {
+      optional_components = ["ANACONDA", "JUPYTER"]
+    }
+
   }
 }

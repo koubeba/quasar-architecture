@@ -9,3 +9,5 @@ frontend/vis/package-lock.json
 /architecture/terraform.tfstate.backup
 /architecture/.terraform/
 /architecture/credentials/
+
+.env

@@ -4,12 +4,21 @@ provider "google-beta" {
   region = var.project_region
 }
 
+resource "google_storage_bucket" "spark_cluster_staging_bucket" {
+  project = var.project_id
+  name = "quasar-spark-cluster-staging-bucket"
+  location = var.project_region
+  force_destroy = true
+}
+
 resource "google_dataproc_cluster" "spark_cluster" {
-  project = "quasar-286018"
+  project = var.project_id
   name    = "spark-cluster"
   region  = var.spark_cluster_region
 
   cluster_config {
+    staging_bucket = google_storage_bucket.spark_cluster_staging_bucket.name
+
     master_config {
       num_instances = var.master_instances
       machine_type = var.master_machine_type
@@ -30,8 +39,30 @@ resource "google_dataproc_cluster" "spark_cluster" {
     }
 
     software_config {
+      image_version = "preview-ubuntu18"
       optional_components = ["ANACONDA", "JUPYTER"]
     }
 
+  }
+}
+
+resource "google_compute_network" "spark_cluster_network" {
+  project = var.project_id
+  name = "spark-cluster-network"
+  auto_create_subnetworks = true
+}
+
+resource "google_compute_firewall" "spark_cluster_firewall" {
+  project = var.project_id
+  name = "spark-cluster-firewall"
+  network = google_compute_network.spark_cluster_network.name
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports = ["22", "8088", "14040", "18080", "8123"]
   }
 }

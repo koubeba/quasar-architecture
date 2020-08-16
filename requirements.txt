@@ -4,15 +4,15 @@ backcall==0.2.0
 bleach==3.1.5
 brotlipy==0.7.0
 certifi==2020.6.20
-cffi @ file:///tmp/build/80754af9/cffi_1596809843656/work
+cffi
 chardet==3.0.4
 conda==4.8.4
-conda-package-handling @ file:///home/conda/feedstock_root/build_artifacts/conda-package-handling-build_1597341278426/work/cph
-cryptography @ file:///home/conda/feedstock_root/build_artifacts/cryptography_1595348770643/work
+conda-package-handling
+cryptography
 decorator==4.4.2
 defusedxml==0.6.0
 entrypoints==0.3
-idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1593328102638/work
+idna
 ipykernel==5.3.4
 ipython==7.17.0
 ipython-genutils==0.2.0
@@ -39,22 +39,22 @@ prometheus-client==0.8.0
 prompt-toolkit==3.0.5
 ptyprocess==0.6.0
 pycosat==0.6.3
-pycparser @ file:///home/conda/feedstock_root/build_artifacts/pycparser_1593275161868/work
+pycparser
 Pygments==2.6.1
 pyOpenSSL==19.1.0
 pyrsistent==0.16.0
 PySocks==1.7.1
 PyYAML==5.3.1
 pyzmq==19.0.2
-requests @ file:///home/conda/feedstock_root/build_artifacts/requests_1592425495151/work
+requests
 ruamel-yaml==0.15.80
 Send2Trash==1.5.0
-six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
+six
 terminado==0.8.3
 testpath==0.4.4
 tornado==6.0.4
-tqdm @ file:///home/conda/feedstock_root/build_artifacts/tqdm_1596476591553/work
+tqdm
 traitlets==4.3.3
-urllib3 @ file:///home/conda/feedstock_root/build_artifacts/urllib3_1595434816409/work
+urllib3
 wcwidth==0.2.5
 webencodings==0.5.1

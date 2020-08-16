@@ -11,12 +11,38 @@ resource "google_storage_bucket" "spark_cluster_staging_bucket" {
   force_destroy = true
 }
 
+resource "google_compute_network" "spark_cluster_network" {
+  project = var.project_id
+  name = "spark-cluster-network"
+  auto_create_subnetworks = true
+}
+
+resource "google_compute_firewall" "spark_cluster_firewall" {
+  project = var.project_id
+  name = "spark-cluster-firewall"
+  network = google_compute_network.spark_cluster_network.name
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports = ["22", "8088", "14040", "18080", "8123"]
+  }
+}
+
 resource "google_dataproc_cluster" "spark_cluster" {
   project = var.project_id
   name    = "spark-cluster"
   region  = var.spark_cluster_region
 
   cluster_config {
+
+    gce_cluster_config {
+      network = google_compute_network.spark_cluster_network.name
+    }
+
     staging_bucket = google_storage_bucket.spark_cluster_staging_bucket.name
 
     master_config {
@@ -46,23 +72,3 @@ resource "google_dataproc_cluster" "spark_cluster" {
   }
 }
 
-resource "google_compute_network" "spark_cluster_network" {
-  project = var.project_id
-  name = "spark-cluster-network"
-  auto_create_subnetworks = true
-}
-
-resource "google_compute_firewall" "spark_cluster_firewall" {
-  project = var.project_id
-  name = "spark-cluster-firewall"
-  network = google_compute_network.spark_cluster_network.name
-
-  allow {
-    protocol = "icmp"
-  }
-
-  allow {
-    protocol = "tcp"
-    ports = ["22", "8088", "14040", "18080", "8123"]
-  }
-}

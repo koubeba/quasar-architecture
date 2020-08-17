@@ -17,10 +17,36 @@ resource "google_compute_network" "spark_cluster_network" {
   auto_create_subnetworks = true
 }
 
-resource "google_compute_firewall" "spark_cluster_firewall" {
+resource "google_compute_firewall" "spark_cluster_internal_firewall" {
   project = var.project_id
-  name = "spark-cluster-firewall"
+  name = "spark-cluster-internal-firewall"
+  priority = 900
   network = google_compute_network.spark_cluster_network.name
+  depends_on = [google_compute_network.spark_cluster_network]
+
+  allow {
+    protocol = "icmp"
+  }
+
+  allow {
+    protocol = "tcp"
+    ports = ["0-65535"]
+  }
+
+  allow {
+    protocol = "udp"
+    ports = ["0-65535"]
+  }
+
+  source_ranges = ["10.0.0.0/8"]
+}
+
+resource "google_compute_firewall" "spark_cluster_external_firewall" {
+  project = var.project_id
+  name = "spark-cluster-external-firewall"
+  priority = 1000
+  network = google_compute_network.spark_cluster_network.name
+  depends_on = [google_compute_network.spark_cluster_network]
 
   allow {
     protocol = "icmp"
@@ -30,20 +56,26 @@ resource "google_compute_firewall" "spark_cluster_firewall" {
     protocol = "tcp"
     ports = ["22", "8088", "14040", "18080", "8123"]
   }
+
+  source_ranges = ["0.0.0.0/0"]
 }
 
 resource "google_dataproc_cluster" "spark_cluster" {
   project = var.project_id
   name    = "spark-cluster"
   region  = var.spark_cluster_region
+  depends_on = [google_storage_bucket.spark_cluster_staging_bucket,
+                google_compute_network.spark_cluster_network,
+                google_compute_firewall.spark_cluster_internal_firewall,
+                google_compute_firewall.spark_cluster_external_firewall]
 
   cluster_config {
+
+    staging_bucket = google_storage_bucket.spark_cluster_staging_bucket.name
 
     gce_cluster_config {
       network = google_compute_network.spark_cluster_network.name
     }
-
-    staging_bucket = google_storage_bucket.spark_cluster_staging_bucket.name
 
     master_config {
       num_instances = var.master_instances

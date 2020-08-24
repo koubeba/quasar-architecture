@@ -54,7 +54,7 @@ resource "google_compute_firewall" "spark_cluster_external_firewall" {
 
   allow {
     protocol = "tcp"
-    ports = ["22", "8088", "14040", "18080", "8123"]
+    ports = ["22", "2181", "8088", "8123","9000", "9090", "9092", "14040", "18080"]
   }
 
   source_ranges = ["0.0.0.0/0"]
@@ -75,6 +75,10 @@ resource "google_dataproc_cluster" "spark_cluster" {
 
     gce_cluster_config {
       network = google_compute_network.spark_cluster_network.name
+      metadata = {
+        "run-on-master": "true",
+        "kafka-enable-jmx": "true"
+      }
     }
 
     master_config {
@@ -98,9 +102,16 @@ resource "google_dataproc_cluster" "spark_cluster" {
 
     software_config {
       image_version = "preview-ubuntu18"
-      optional_components = ["ANACONDA", "JUPYTER"]
+      optional_components = ["ANACONDA", "JUPYTER", "ZOOKEEPER"]
     }
 
+    initialization_action {
+      script = "gs://dataproc-initialization-actions/kafka/kafka.sh"
+    }
+
+    initialization_action {
+      script = "gs://dataproc-initialization-actions/kafka/cruise-control.sh"
+    }
   }
 }
 

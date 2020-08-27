@@ -54,7 +54,7 @@ resource "google_compute_firewall" "spark_cluster_external_firewall" {
 
   allow {
     protocol = "tcp"
-    ports = ["22", "2181", "8088", "8123","9000", "9090", "9092", "14040", "18080"]
+    ports = ["22", "2181", "8088", "8123", "8998", "9000", "9090", "9092", "14040", "18080"]
   }
 
   source_ranges = ["0.0.0.0/0"]
@@ -111,6 +111,10 @@ resource "google_dataproc_cluster" "spark_cluster" {
 
     initialization_action {
       script = "gs://dataproc-initialization-actions/kafka/cruise-control.sh"
+    }
+
+    initialization_action {
+      script = "gs://dataproc-initialization-actions/livy/livy.sh"
     }
   }
 }

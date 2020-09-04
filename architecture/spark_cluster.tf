@@ -20,7 +20,6 @@ resource "google_compute_network" "spark_cluster_network" {
 resource "google_compute_firewall" "spark_cluster_internal_firewall" {
   project = var.project_id
   name = "spark-cluster-internal-firewall"
-  priority = 900
   network = google_compute_network.spark_cluster_network.name
   depends_on = [google_compute_network.spark_cluster_network]
 
@@ -44,7 +43,6 @@ resource "google_compute_firewall" "spark_cluster_internal_firewall" {
 resource "google_compute_firewall" "spark_cluster_external_firewall" {
   project = var.project_id
   name = "spark-cluster-external-firewall"
-  priority = 1000
   network = google_compute_network.spark_cluster_network.name
   depends_on = [google_compute_network.spark_cluster_network]
 
@@ -54,7 +52,7 @@ resource "google_compute_firewall" "spark_cluster_external_firewall" {
 
   allow {
     protocol = "tcp"
-    ports = ["22", "2181", "8088", "8123", "8998", "9000", "9090", "9092", "14040", "18080"]
+    ports = ["22", "2181", "8088", "8123", "9000", "9090", "9092", "14040", "18080"]
   }
 
   source_ranges = ["0.0.0.0/0"]
@@ -111,10 +109,6 @@ resource "google_dataproc_cluster" "spark_cluster" {
 
     initialization_action {
       script = "gs://dataproc-initialization-actions/kafka/cruise-control.sh"
-    }
-
-    initialization_action {
-      script = "gs://dataproc-initialization-actions/livy/livy.sh"
     }
   }
 }

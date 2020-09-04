@@ -14,7 +14,7 @@ variable "master_instances" {
   default = "1"
 }
 variable "master_machine_type" {
-  default = "n1-standard-4"
+  default = "n1-highmem-4"
 }
 variable "master_disk_size_gb" {
   default = "100"
@@ -24,7 +24,7 @@ variable "worker_instances" {
   default = "2"
 }
 variable "worker_machine_type" {
-  default = "n1-standard-2"
+  default = "n1-highmem-2"
 }
 variable "worker_disk_size_gb" {
   default = "100"
